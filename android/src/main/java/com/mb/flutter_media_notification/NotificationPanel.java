@@ -29,7 +29,7 @@ class NotificationPanel {
         this.author = author;
         this.play = play;
 
-         nBuilder = new NotificationCompat.Builder(parent, "AH Playback")
+         nBuilder = new NotificationCompat.Builder(parent, "MB Playback")
                  .setSmallIcon(R.drawable.ic_stat_music_note)
                  .setPriority(Notification.PRIORITY_DEFAULT)
                  .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)

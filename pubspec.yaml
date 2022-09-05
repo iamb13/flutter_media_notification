@@ -1,17 +1,17 @@
 name: flutter_media_notification
 description: A new flutter plugin project.
-version: 0.0.1
+version: 0.0.2
 author: Mahesh Bohara
 homepage:
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
     
-  meta: ^1.1.6
+  meta:
 
 dev_dependencies:
   flutter_test:

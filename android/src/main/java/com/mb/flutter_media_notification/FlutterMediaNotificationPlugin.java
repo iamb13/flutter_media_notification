@@ -1,95 +1,111 @@
 package com.mb.flutter_media_notification;
 
+import androidx.annotation.NonNull;
+
+import android.content.Context;
+
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 //imported to build plugin
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
 
-/** FlutterMediaNotificationPlugin */
-public class FlutterMediaNotificationPlugin implements MethodCallHandler {
-  private static final String CHANNEL_ID = "AH Playback";
-  private static Registrar registrar;
-  private static NotificationPanel nPanel;
-  private static MethodChannel channel;
+/**
+ * FlutterMediaNotificationPlugin
+ */
+public class FlutterMediaNotificationPlugin implements FlutterPlugin, MethodCallHandler {
+    /// The MethodChannel that will the communication between Flutter and native Android
+    ///
+    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+    /// when the Flutter Engine is detached from the Activity
+//    private MethodChannel channel;
+    private static MethodChannel channel;
+    private static final String CHANNEL_ID = "MB Playback";
+    private static NotificationPanel nPanel;
 
-  
-  private FlutterMediaNotificationPlugin(Registrar r) {
-    registrar = r;
-  }
-  
-  /** Plugin registration. */
-  public static void registerWith(Registrar registrar) {
-    // final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_media_notification");
-    // channel.setMethodCallHandler(new FlutterMediaNotificationPlugin(registrar));
-    
-    FlutterMediaNotificationPlugin.channel = new MethodChannel(registrar.messenger(), "com.mb.flutter_media_notification");
-    FlutterMediaNotificationPlugin.channel.setMethodCallHandler(new FlutterMediaNotificationPlugin(registrar));
-  }
+    private static Context context;
 
-  @Override
-  public void onMethodCall(MethodCall call, Result result) {
-    // if (call.method.equals("getPlatformVersion")) {
-    //   result.success("Android " + android.os.Build.VERSION.RELEASE);
-    // } else {
-    //   result.notImplemented();
-    // }
-    
-      switch (call.method) {
-          case "show":
-              final String title = call.argument("title");
-              final String author = call.argument("author");
-              final boolean play = call.argument("play");
-              show(title, author, play);
-              result.success(null);
-              break;
+    /**
+     * Plugin registration.
+     */
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        // TODO: your plugin is now attached to a Flutter experience.
+
+        // final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_media_notification");
+        // channel.setMethodCallHandler(new FlutterMediaNotificationPlugin(registrar));
+
+        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.mb.flutter_media_notification");
+        channel.setMethodCallHandler(this);
+        context = flutterPluginBinding.getApplicationContext();
+
+    }
+
+    @Override
+    public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
+        switch (call.method) {
+            case "show":
+                final String title = call.argument("title");
+                final String author = call.argument("author");
+                final boolean play = call.argument("play");
+                show(title, author, play);
+                result.success(null);
+                break;
             case "hide":
-              hide();
-              result.success(null);
-              break;
-          default:
-              result.notImplemented();
-      }
-  }
-  
-  public static void callEvent(String event) {
+                hide();
+                result.success(null);
+                break;
+            default:
+                result.notImplemented();
+        }
+    }
 
-    FlutterMediaNotificationPlugin.channel.invokeMethod(event, null, new Result() {
-          @Override
-          public void success(Object o) {
-              // this will be called with o = "some string"
-          }
+    public static void callEvent(String event) {
 
-          @Override
-          public void error(String s, String s1, Object o) {}
+        channel.invokeMethod(event, null, new Result() {
+            @Override
+            public void success(Object o) {
+                // this will be called with o = "some string"
+            }
 
-          @Override
-          public void notImplemented() {}
-      });
-  }
+            @Override
+            public void error(String s, String s1, Object o) {
+            }
 
-  public static void show(String title, String author, boolean play) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-          int importance = NotificationManager.IMPORTANCE_DEFAULT;
-          NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, importance);
-          channel.setDescription("Shows notification for currently playing songs.");
-          channel.enableVibration(false);
-          channel.setSound(null, null);
-          NotificationManager notificationManager = registrar.context().getSystemService(NotificationManager.class);
-          notificationManager.createNotificationChannel(channel);
-      }
+            @Override
+            public void notImplemented() {
+            }
+        });
+    }
 
-      nPanel = new NotificationPanel(registrar.context(), title, author, play);
-  }
+    public static void show(String title, String author, boolean play) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, importance);
+            channel.setDescription("Shows notification for currently playing songs.");
+            channel.enableVibration(false);
+            channel.setSound(null, null);
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
 
-  private void hide() {
-    if(nPanel != null) nPanel.notificationCancel();
-    else System.out.println("No any media notification");
-  }
+        nPanel = new NotificationPanel(context, title, author, play);
+    }
 
+    private void hide() {
+        if (nPanel != null) nPanel.notificationCancel();
+        else System.out.println("No any media notification");
+    }
+
+
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        // TODO: your plugin is no longer attached to a Flutter experience.
+        channel.setMethodCallHandler(null);
+    }
 
 }

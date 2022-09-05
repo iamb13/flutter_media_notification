@@ -57,7 +57,7 @@ class MediaNotification {
   /// To show your media notification you have to pass [title] and
   /// [author] of music. If music is pausing you have to set
   /// [isPlaying] false.
-  Future<void> showNotification({@required title, @required author, isPlaying = true}) async {
+  Future<void> showNotification({required title, required author, isPlaying = true}) async {
     try {
       final Map<String, dynamic> params = <String, dynamic>{
         'title': title,
@@ -73,7 +73,7 @@ class MediaNotification {
   Future<void> hideNotification() async => await _channel.invokeMethod('hide');
   
   static Future show(
-    {@required title, @required author, isPlaying = true}) async {
+    {required title, required author, isPlaying = true}) async {
       
     try {
       final Map<String, dynamic> params = <String, dynamic>{
@@ -140,6 +140,7 @@ class MediaNotification {
         _mediaNotificationStateController.add(MediaNotificationState.SELECT);
         break;
       default:
+        _state = MediaNotificationState.STOPPED;
         throw new ArgumentError('Unknown method ${call.method} ');
     }
     
